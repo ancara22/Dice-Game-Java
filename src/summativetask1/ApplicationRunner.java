@@ -3,7 +3,6 @@ package summativetask1;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Vector;
-import java.util.stream.IntStream;
 
 public class ApplicationRunner {
 
@@ -12,22 +11,25 @@ public class ApplicationRunner {
 
         for (int j = 1; j <= 3; j++) {
             Vector one_player = new Vector(3);
+
             for (int i = 1; i <= 3; i++) {
                 one_player.add(i - 1, startGame("" + i));
             }
+
             playersResults.add(j - 1, one_player);
             printTable(playersResults);
         }
-
         winer(playersResults);
     }
 
+    //Start entire game
     public static int startGame(String player) {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("\n--------------------------------------------");
         System.out.println("Player " + player);
 
+        //Define vars
         int dicesNr = 8;
         int score = 0;
         int[] usedDices = new int[0];
@@ -36,6 +38,7 @@ public class ApplicationRunner {
 
         System.out.println("First throw of this turn, starting with " + dicesNr + " dice.");
 
+        //Start the player round
         do {
             System.out.print("Enter 't' to throw > ");
             String operation = scanner.nextLine();
@@ -44,6 +47,7 @@ public class ApplicationRunner {
                 int[] dices = roleDice(dicesNr);
 
                 if (usedDices.length != 0) {
+                    //Print already seted dices
                     System.out.print("\nYou have already set aside: ");
 
                     for (int i = 0; i < usedDices.length; i++) {
@@ -51,7 +55,7 @@ public class ApplicationRunner {
                     }
                     System.out.print("\n");
 
-                    //Checb if player boosts
+                    //Chech if player boosts
                     int inGame = 0;
 
                     for (int i = 0; i < dices.length; i++) {
@@ -61,6 +65,7 @@ public class ApplicationRunner {
                             }
                         }
                     }
+
                     //If player boosted, finish the player round
                     if (inGame == dices.length) {
                         System.out.println("Sorry, you have busted with that throw.");
@@ -84,7 +89,6 @@ public class ApplicationRunner {
                         if (!exist) {
                             System.out.print("[" + dices[i] + "]");
                         }
-
                     }
                 }
 
@@ -92,6 +96,8 @@ public class ApplicationRunner {
                 System.out.print("\nSelect die value to set aside > ");
                 int chosedDice = scanner.nextInt();
 
+                
+                //Count how many dices have that chosed value
                 int counter = 0;
 
                 for (int i = 0; i < dices.length; i++) {
@@ -102,6 +108,7 @@ public class ApplicationRunner {
 
                 System.out.println("There are " + counter + " dice that have that value");
 
+                //Enumerate how many player can choose
                 String enumerate = "";
                 for (int i = 0; i < counter; i++) {
                     if (i + 1 != counter) {
@@ -110,6 +117,8 @@ public class ApplicationRunner {
                         enumerate += "or " + (i + 1);
                     }
                 }
+
+                //If it there are more than 1 of chosed value
                 int howMany = 1;
                 if (counter != 1) {
                     System.out.println("You can choose to keep " + enumerate + " dice of value " + chosedDice);
@@ -119,50 +128,52 @@ public class ApplicationRunner {
                     System.out.println("Only one die has that value, setting aside the one die with value " + chosedDice);
                 }
 
+                //Add to player score
                 score += howMany * chosedDice;
-                keptDices += counter;
                 System.out.println("Score so far = " + score);
+                //How many dices player kept so far
+                keptDices += counter;
                 System.out.println("You have kept " + keptDices + " dice so far.");
 
+                //If player not kept allready all the dices
                 if (keptDices != 8) {
                     System.out.print("Finish turn or continue (enter f to finish turn or c to continue and throw again) > ");
                     scanner.nextLine();
                     operation = scanner.nextLine();
-                    
+
+                    //If player chosed to finish the round
                     if (operation.equals("f")) {
                         System.out.println("Final score for that turn for Player " + player + " = " + score);
                         stop = false;
                     } else {
+                        //If Player chosed to continue
                         dicesNr -= howMany;
                         System.out.println("Taking " + dicesNr + " dice forward to next throw.\nNext throw of this turn.");
-
                         usedDices = Arrays.copyOf(usedDices, usedDices.length + 1);
                         usedDices[usedDices.length - 1] = chosedDice;
-
                     }
-
                 } else {
                     System.out.println("Final score for that turn for Player " + player + " = " + score);
                     stop = false;
                 }
-
             }
-
         } while (stop);
-        return score;
 
+        return score;
     }
 
+    //Role dice
     public static int[] roleDice(int nr) {
         int[] dices = new int[nr];
         System.out.print("Throw: ");
 
+        //Generate the dices and print
         for (int i = 0; i < nr; i++) {
             int random = (int) (Math.random() * 6 + 1);
             dices[i] = random;
             System.out.print("[" + dices[i] + "] ");
         }
-
+        //Sort the dices and print
         Arrays.sort(dices);
         System.out.print("\nSorted: ");
 
@@ -173,6 +184,7 @@ public class ApplicationRunner {
         return dices;
     }
 
+    //Print entire table
     public static void printTable(Vector usersScore) {
         int total1 = 0, total2 = 0, total3 = 0;
 
@@ -180,6 +192,7 @@ public class ApplicationRunner {
         System.out.println("|   Round   |   Player1   |   Player2   |   Player3  |");
         System.out.println("------------------------------------------------------");
 
+        //Print the rounds lines
         for (int i = 0; i < 3; i++) {
             if (usersScore.size() > i) {
                 Vector round = (Vector) usersScore.get(i);
@@ -193,11 +206,13 @@ public class ApplicationRunner {
             System.out.println("------------------------------------------------------");
         }
 
+        //Print the total score
         System.out.println("|   Total   |     " + ((total1 > 9) ? total1 : " " + total1) + "      |     " + ((total2 > 9) ? total2 : " " + total2) + "      |     " + ((total3 > 9) ? total3 : " " + total3) + "     |");
         System.out.println("------------------------------------------------------");
 
     }
 
+    //Print one table line
     public static void printLine(int nr, Vector round) {
         System.out.println("|     " + (nr + 1) + "     |     "
                 + (((int) (round.get(0)) > 9) ? round.get(0) : " " + round.get(0)) + "      |     "
@@ -205,15 +220,19 @@ public class ApplicationRunner {
                 + (((int) (round.get(2)) > 9) ? round.get(2) : " " + round.get(2)) + "     |");
     }
 
+    //Find who is winner 
     public static void winer(Vector playersResults) {
         int[] scoresTotal = {0, 0, 0};
 
+        //Calculate the players total score
         for (int i = 0; i < 3; i++) {
             for (int s = 0; s < 3; s++) {
                 Vector score = (Vector) playersResults.get(s);
                 scoresTotal[i] += (int) score.get(i);
             }
         }
+        
+        //Find who is winner
         if (scoresTotal[0] > scoresTotal[1] && scoresTotal[0] > scoresTotal[2]) {
             System.out.println("Player 1 wins that game.!");
         } else if (scoresTotal[1] > scoresTotal[0] && scoresTotal[1] > scoresTotal[2]) {
@@ -221,6 +240,5 @@ public class ApplicationRunner {
         } else {
             System.out.println("Player 3 wins that game.!");
         }
-
     }
 }
