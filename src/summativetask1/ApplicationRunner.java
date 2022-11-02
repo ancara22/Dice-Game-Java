@@ -1,6 +1,7 @@
 package summativetask1;
 
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -92,71 +93,84 @@ public class ApplicationRunner {
                     }
                 }
 
-                //Select die value
-                System.out.print("\nSelect die value to set aside > ");
-                int chosedDice = scanner.nextInt();
+                boolean isNumber;
+                do {
+                    
+                    try {
+                        //Select die value
+                        System.out.print("\nSelect die value to set aside > ");
+                        int chosedDice = scanner.nextInt();
+                        
+                        isNumber = true;
 
-                
-                //Count how many dices have that chosed value
-                int counter = 0;
+                        //Count how many dices have that chosed value
+                        int counter = 0;
 
-                for (int i = 0; i < dices.length; i++) {
-                    if (dices[i] == chosedDice) {
-                        counter++;
+                        for (int i = 0; i < dices.length; i++) {
+                            if (dices[i] == chosedDice) {
+                                counter++;
+                            }
+                        }
+
+                        System.out.println("There are " + counter + " dice that have that value");
+
+                        //Enumerate how many player can choose
+                        String enumerate = "";
+                        for (int i = 0; i < counter; i++) {
+                            if (i + 1 != counter) {
+                                enumerate += (i + 1) + ", ";
+                            } else {
+                                enumerate += "or " + (i + 1);
+                            }
+                        }
+
+                        //If it there are more than 1 of chosed value
+                        int howMany = 1;
+                        if (counter != 1) {
+                            System.out.println("You can choose to keep " + enumerate + " dice of value " + chosedDice);
+                            System.out.print("How many do you want to set aside > ");
+                            howMany = scanner.nextInt();
+                        } else {
+                            System.out.println("Only one die has that value, setting aside the one die with value " + chosedDice);
+                        }
+
+                        //Add to player score
+                        score += howMany * chosedDice;
+                        System.out.println("Score so far = " + score);
+                        //How many dices player kept so far
+                        keptDices += counter;
+                        System.out.println("You have kept " + keptDices + " dice so far.");
+
+                        //If player not kept allready all the dices
+                        if (keptDices != 8) {
+                            System.out.print("Finish turn or continue (enter f to finish turn or c to continue and throw again) > ");
+                            scanner.nextLine();
+                            operation = scanner.nextLine();
+
+                            //If player chosed to finish the round
+                            if (operation.equals("f")) {
+                                System.out.println("Final score for that turn for Player " + player + " = " + score);
+                                stop = false;
+                            } else {
+                                //If Player chosed to continue
+                                dicesNr -= howMany;
+                                System.out.println("Taking " + dicesNr + " dice forward to next throw.\nNext throw of this turn.");
+                                usedDices = Arrays.copyOf(usedDices, usedDices.length + 1);
+                                usedDices[usedDices.length - 1] = chosedDice;
+                            }
+                        } else {
+                            System.out.println("Final score for that turn for Player " + player + " = " + score);
+                            stop = false;
+                        }
+                        
+                    } catch (InputMismatchException e) {
+                        scanner.nextLine();
+                        isNumber = false;
+                        System.out.println("Not a correct number");
                     }
-                }
-
-                System.out.println("There are " + counter + " dice that have that value");
-
-                //Enumerate how many player can choose
-                String enumerate = "";
-                for (int i = 0; i < counter; i++) {
-                    if (i + 1 != counter) {
-                        enumerate += (i + 1) + ", ";
-                    } else {
-                        enumerate += "or " + (i + 1);
-                    }
-                }
-
-                //If it there are more than 1 of chosed value
-                int howMany = 1;
-                if (counter != 1) {
-                    System.out.println("You can choose to keep " + enumerate + " dice of value " + chosedDice);
-                    System.out.print("How many do you want to set aside > ");
-                    howMany = scanner.nextInt();
-                } else {
-                    System.out.println("Only one die has that value, setting aside the one die with value " + chosedDice);
-                }
-
-                //Add to player score
-                score += howMany * chosedDice;
-                System.out.println("Score so far = " + score);
-                //How many dices player kept so far
-                keptDices += counter;
-                System.out.println("You have kept " + keptDices + " dice so far.");
-
-                //If player not kept allready all the dices
-                if (keptDices != 8) {
-                    System.out.print("Finish turn or continue (enter f to finish turn or c to continue and throw again) > ");
-                    scanner.nextLine();
-                    operation = scanner.nextLine();
-
-                    //If player chosed to finish the round
-                    if (operation.equals("f")) {
-                        System.out.println("Final score for that turn for Player " + player + " = " + score);
-                        stop = false;
-                    } else {
-                        //If Player chosed to continue
-                        dicesNr -= howMany;
-                        System.out.println("Taking " + dicesNr + " dice forward to next throw.\nNext throw of this turn.");
-                        usedDices = Arrays.copyOf(usedDices, usedDices.length + 1);
-                        usedDices[usedDices.length - 1] = chosedDice;
-                    }
-                } else {
-                    System.out.println("Final score for that turn for Player " + player + " = " + score);
-                    stop = false;
-                }
+                } while (!isNumber);
             }
+
         } while (stop);
 
         return score;
@@ -231,7 +245,7 @@ public class ApplicationRunner {
                 scoresTotal[i] += (int) score.get(i);
             }
         }
-        
+
         //Find who is winner
         if (scoresTotal[0] > scoresTotal[1] && scoresTotal[0] > scoresTotal[2]) {
             System.out.println("Player 1 wins that game.!");
