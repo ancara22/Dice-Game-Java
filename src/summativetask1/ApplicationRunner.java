@@ -13,10 +13,9 @@ public class ApplicationRunner {
         for (int j = 1; j <= 3; j++) {
             Vector one_player = new Vector(3);
 
-            for (int i = 1; i <= 3; i++) {
+            for (int i = 1; i <= 3; i++) 
                 one_player.add(i - 1, startGame("" + i));
-            }
-
+            
             playersResults.add(j - 1, one_player);
             printTable(playersResults);
         }
@@ -27,7 +26,7 @@ public class ApplicationRunner {
     public static int startGame(String player) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("\n--------------------------------------------");
+        System.out.println("\n------------------------------------------------------");
         System.out.println("Player " + player);
 
         //Define vars
@@ -54,6 +53,7 @@ public class ApplicationRunner {
                     for (int i = 0; i < usedDices.length; i++) {
                         System.out.print("[" + usedDices[i] + "]");
                     }
+
                     System.out.print("\n");
 
                     //Chech if player boosts
@@ -82,11 +82,13 @@ public class ApplicationRunner {
                     boolean exist;
                     for (int i = 0; i < dices.length; i++) {
                         exist = false;
+
                         for (int j = 0; j < usedDices.length; j++) {
                             if (dices[i] == usedDices[j]) {
                                 exist = true;
                             }
                         }
+
                         if (!exist) {
                             System.out.print("[" + dices[i] + "]");
                         }
@@ -94,23 +96,33 @@ public class ApplicationRunner {
                 }
 
                 boolean isNumber;
+                int counter;
+                boolean isCorrectDiceValue;
+                int chosedDice;
                 do {
-                    
                     try {
-                        //Select die value
-                        System.out.print("\nSelect die value to set aside > ");
-                        int chosedDice = scanner.nextInt();
-                        
+                        counter = 0;
                         isNumber = true;
 
-                        //Count how many dices have that chosed value
-                        int counter = 0;
+                        do {
+                            isCorrectDiceValue = true;
 
-                        for (int i = 0; i < dices.length; i++) {
-                            if (dices[i] == chosedDice) {
-                                counter++;
+                            //Select die value
+                            System.out.print("\nSelect die value to set aside > ");
+                            chosedDice = scanner.nextInt();
+
+                            //Count how many dices have that chosed value
+                            for (int i = 0; i < dices.length; i++) {
+                                if (dices[i] == chosedDice) {
+                                    counter++;
+                                }
                             }
-                        }
+
+                            if (counter == 0) {
+                                System.out.println("Incorrect dice.");
+                                isCorrectDiceValue = false;
+                            }
+                        } while (!isCorrectDiceValue);
 
                         System.out.println("There are " + counter + " dice that have that value");
 
@@ -126,10 +138,20 @@ public class ApplicationRunner {
 
                         //If it there are more than 1 of chosed value
                         int howMany = 1;
+
                         if (counter != 1) {
                             System.out.println("You can choose to keep " + enumerate + " dice of value " + chosedDice);
-                            System.out.print("How many do you want to set aside > ");
-                            howMany = scanner.nextInt();
+
+                            boolean notTooMany = true;
+
+                            do {
+                                System.out.print("How many do you want to set aside > ");
+                                howMany = scanner.nextInt();
+                                if (howMany <= counter && howMany > 0) {
+                                    notTooMany = false;
+                                }
+                            } while (notTooMany);
+
                         } else {
                             System.out.println("Only one die has that value, setting aside the one die with value " + chosedDice);
                         }
@@ -162,7 +184,7 @@ public class ApplicationRunner {
                             System.out.println("Final score for that turn for Player " + player + " = " + score);
                             stop = false;
                         }
-                        
+
                     } catch (InputMismatchException e) {
                         scanner.nextLine();
                         isNumber = false;
