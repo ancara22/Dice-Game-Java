@@ -16,54 +16,33 @@ public class ApplicationRunner {
 
             //Running for 3 users
             for (int i = 1; i <= 3; i++) {
-                one_player.add(i - 1, startGame("" + i));
+                one_player.add(i - 1, playGame("" + i));
             }
 
             playersResults.add(j - 1, one_player);
             printTable(playersResults);
         }
-        winer(playersResults);    //Checking who winns the game
+        whoIsWiner(playersResults);    //Checking who winns the game
     }
 
-    /*
-    Function for printing
-    @params, 2 strings, string and int, or one string
-    @void, print text
-     */
-    public static void soutPrint(String str, String param) {
-        System.out.printf(str, param);
-    }
-
-    public static void soutPrint(String str, int param) {
-        System.out.printf(str, param);
-    }
-
-    public static void soutPrint(String str) {
-        System.out.printf(str);
-    }
-
-    public static void soutPrintDivider() {
-        System.out.printf("\n------------------------------------------------------");
-    }
-
+    
     /* 
        Start Game for one player 
        @param, player string with player number
        @return, player score int
      */
-    public static int startGame(String player) {
-        int dicesNumber = 8, currentScore = 0, counter;
-        int keptDices = 0, chosedDice, countUsedDices, howManyChosed;
-        boolean isDiceUnused, isNumber, isCorrectDiceValue, notTooMany;
-        boolean finishPlayerRound = true, continueGame;
-        String enumerate;
+    public static int playGame(String player) {
+        int dicesNumber = 8, currentScore = 0, counter,
+                keptDices = 0, chosedDice, howManyChosed;
+        boolean isNumber, isCorrectDiceValue,
+                finishPlayerRound = true, continueGame;
         int[] usedDices = new int[0];
 
         Scanner scanner = new Scanner(System.in);
 
         soutPrintDivider();
-        soutPrint("\nPlayer %2s", player);
-        soutPrint("\nFirst throw of this turn, starting with %2d dice.", dicesNumber);
+        soutPrint("\nPlayer " + player);
+        soutPrint("\nFirst throw of this turn, starting with " + dicesNumber + " dices.");
 
         //Start the player round
         do {
@@ -74,47 +53,25 @@ public class ApplicationRunner {
                 int[] dices = roleDice(dicesNumber);
 
                 if (usedDices.length != 0) {
-                    soutPrint("\nYou have already set aside: ");       //Print already seted dices
+                    soutPrint("\nYou have already set aside: ");
 
+                    //Print already seted dices
                     for (int i = 0; i < usedDices.length; i++) {
                         soutPrint("[" + usedDices[i] + "]");
                     }
 
                     //Checking if player boosted
-                    countUsedDices = 0;
-                    for (int element : usedDices) {
-                        if (Arrays.stream(dices).anyMatch(x -> x == element)) {
-                            countUsedDices += 1;
-                        }
-                    }
-
-                    if (countUsedDices == dices.length) {      //If player boosted, finish the player round
-                        soutPrint("\nSorry, you have busted with that throw."
-                                + "\nThis ends your turn with no score.");
-                        soutPrint("\nFinal score for that turn for Player %2s = 0", player);
+                    if (isBoostead(usedDices, dices, player)) {
                         return 0;
                     }
 
                     soutPrint("\nYou must now select a different die value."
                             + "\nYou can now select one of the following: ");
 
-                    //Fillter unused dices
-                    int[] unicDicesArray = new int[8];
-                    for (int i = 0; i < dices.length; i++) {
-                        isDiceUnused = false;
-
-                        for (int j = 0; j < usedDices.length; j++) {
-                            if (dices[i] == usedDices[j]) {
-                                isDiceUnused = true;
-                            }
-                        }
-                        int currentDice = dices[i];
-                        if (!isDiceUnused && !(Arrays.stream(unicDicesArray).anyMatch(x -> x == currentDice))) {
-                            soutPrint("[" + dices[i] + "]");
-                            unicDicesArray[i] = dices[i];
-                        }
-                    }
+                    //Print unused dices
+                    printUnusedDices(dices, usedDices);
                 }
+
                 do {
                     try {
                         counter = 0;
@@ -125,59 +82,26 @@ public class ApplicationRunner {
 
                             soutPrint("\nSelect die value to set aside > ");  //Select die value
                             chosedDice = scanner.nextInt();
-                            int finalChosedDice = chosedDice;
 
-                            for (int i = 0; i < dices.length; i++) {     //Count how many dices have that chosed value
-                                if (dices[i] == chosedDice && !(Arrays.stream(usedDices).anyMatch(x -> x == finalChosedDice))) {
-                                    counter++;
-                                }
-                            }
+                            //Count how many dices have that chosed value
+                            counter = countDices(chosedDice, dices, usedDices);
 
                             if (counter == 0) {
-                                soutPrint("\nIncorrect dice!!!");
+                                soutPrintIncorrect();
                                 isCorrectDiceValue = false;
                             }
                         } while (!isCorrectDiceValue);
 
-                        enumerate = "";                          //Enumerate how many values player can choose
-                        for (int i = 0; i < counter; i++) {
-                            if (i + 1 != counter) {
-                                enumerate += (i + 1) + ", ";
-                            } else {
-                                enumerate += "or " + (i + 1);
-                            }
-                        }
-
-                        //If there are more than 1 of chosed value
-                        if (counter != 1) {
-                            soutPrint("There are %1d dice that have that value", counter);
-                            soutPrint("\nYou can choose to keep " + enumerate
-                                    + " dice of value " + chosedDice);
-                            do {
-                                soutPrint("\nHow many do you want to set aside > ");
-
-                                howManyChosed = scanner.nextInt();
-                                if (howManyChosed <= counter && howManyChosed > 0) {
-                                    notTooMany = false;
-                                } else {
-                                    notTooMany = true;
-                                    soutPrint("\nIncorect amount!!!\n");
-                                }
-                            } while (notTooMany);
-
-                        } else {
-                            howManyChosed = 1;
-                            soutPrint("Only one die has that value, setting aside "
-                                    + "the one die with value " + chosedDice + "\n");
-                        }
+                        //Print options and scann how many dices to take aside
+                        howManyChosed = selectDicesAmount(counter, chosedDice);
 
                         currentScore += howManyChosed * chosedDice;                     //Add to player score
-                        soutPrint("Score so far = %3d", currentScore);         //How many dices player kept so far
+                        soutPrint("Score so far = " + currentScore);                    //How many dices player kept so far
 
                         keptDices += howManyChosed;
                         soutPrint("\nYou have kept " + keptDices + " dice so far.");
 
-                        if (keptDices != 8) {                                            //If player not kept allready all the dices
+                        if (keptDices != 8) {
                             do {
                                 soutPrint("\nFinish turn or continue (enter f to "
                                         + "finish turn or c to continue and throw again) > ");
@@ -195,7 +119,7 @@ public class ApplicationRunner {
                                     usedDices[usedDices.length - 1] = chosedDice;
                                     continueGame = false;
                                 } else {
-                                    soutPrint("\nIncorrect character!!!");
+                                    soutPrintIncorrect();
                                     continueGame = true;
                                 }
                             } while (continueGame);
@@ -208,14 +132,156 @@ public class ApplicationRunner {
                     } catch (InputMismatchException e) {
                         scanner.nextLine();
                         isNumber = false;
-                        soutPrint("\nNot a Number!!!");
+                        soutPrintIncorrect();
                     }
                 } while (!isNumber);
+            } else {
+                soutPrintIncorrect();
             }
 
         } while (finishPlayerRound);
 
         return currentScore;
+    }
+
+    /*
+        Functions for printing
+        @param, one string, or nothing
+        @void, print text
+     */
+    public static void soutPrint(String str) {
+        System.out.printf(str);
+    }
+
+    public static void soutPrintIncorrect() {
+        System.out.printf("\nIncorect character/number!!!\n");
+    }
+
+    public static void soutPrintDivider() {
+        System.out.printf("\n------------------------------------------------------");
+    }
+
+    /*
+        Enumerate how many values player can choose
+        @param, counter, how many to enumerate
+        @return String with enumerated list
+     */
+    public static String enumerateToString(int counter) {
+
+        String enumerate = "";
+        for (int i = 0; i < counter; i++) {
+            if (i + 1 != counter) {
+                enumerate += (i + 1) + ", ";
+            } else {
+                enumerate += "or " + (i + 1);
+            }
+        }
+        return enumerate;
+    }
+
+    /*
+        Checking if player boosted
+        @params, useedDices - used dices, dices in game, player number
+        @return and print boolean, if player boostead or not
+     */
+    public static boolean isBoostead(int[] usedDices, int[] dices, String player) {
+
+        int countUsedDices = 0;
+        for (int element : usedDices) {
+            if (Arrays.stream(dices).anyMatch(x -> x == element)) {
+                countUsedDices += 1;
+            }
+        }
+
+        if (countUsedDices == dices.length) {      //If player boosted, finish the player round
+            soutPrint("\nSorry, you have busted with that throw."
+                    + "\nThis ends your turn with no score.");
+            soutPrint("\nFinal score for that turn for Player " + player + " = 0");
+            return true;
+        }
+        return false;
+    }
+
+    /*
+        Print unused dices
+        @params, int[] dices- dices in game, and int[] usedDices - already used dices
+        @void, print the list of unused dices
+     */
+    public static void printUnusedDices(int[] dices, int[] usedDices) {
+        boolean isDiceUnused;
+        int[] unicDicesArr = new int[8];
+
+        for (int i = 0; i < dices.length; i++) {
+            isDiceUnused = false;
+
+            for (int j = 0; j < usedDices.length; j++) {
+                if (dices[i] == usedDices[j]) {
+                    isDiceUnused = true;
+                }
+            }
+            int currentDice = dices[i];
+            if (!isDiceUnused && !(Arrays.stream(unicDicesArr).anyMatch(x -> x == currentDice))) {
+                soutPrint("[" + dices[i] + "]");
+                unicDicesArr[i] = dices[i];
+            }
+        }
+
+    }
+
+    /*
+        Count how many dices of chosed value are in game
+        @params,  int chosedDice - chosed dice value, int[] dices- dices in game, and int[] usedDices - already used dices
+        @return int counter
+     */
+    public static int countDices(int chosedDice, int[] dices, int[] usedDices) {
+        int counter = 0;
+        int finalChosedDice = chosedDice;
+
+        for (int i = 0; i < dices.length; i++) {     //Count how many dices have that chosed value
+            if (dices[i] == chosedDice && !(Arrays.stream(usedDices).anyMatch(x -> x == finalChosedDice))) {
+                counter++;
+            }
+        }
+
+        return counter;
+    }
+
+    /*
+        Select how many dices of chosed value to set aside
+        @params, int counter - how many dices of chosed value are in game, int chosedDice - chosed dice value
+        @return int, how many dices to set aside
+     */
+    public static int selectDicesAmount(int counter, int chosedDice) {
+        int howManyChosed;
+        boolean notTooMany;
+
+        Scanner scanner = new Scanner(System.in);
+
+        //Enumerate how many values player can choose
+        String enumerate = enumerateToString(counter);
+
+        if (counter != 1) {
+            soutPrint("There are " + counter + " dice that have that value");
+            soutPrint("\nYou can choose to keep " + enumerate
+                    + " dice of value " + chosedDice);
+            do {
+                soutPrint("\nHow many do you want to set aside > ");
+
+                howManyChosed = scanner.nextInt();
+                if (howManyChosed <= counter && howManyChosed > 0) {
+                    notTooMany = false;
+                } else {
+                    notTooMany = true;
+                    soutPrintIncorrect();
+                }
+            } while (notTooMany);
+
+        } else {
+            howManyChosed = 1;
+            soutPrint("Only one die has that value, setting aside "
+                    + "the one die with value " + chosedDice + "\n");
+        }
+        return howManyChosed;
     }
 
     /*
@@ -292,7 +358,7 @@ public class ApplicationRunner {
         @param, playersResults - ArrayList with players results
         @void, print who is winner
      */
-    public static void winer(ArrayList playersResults) {
+    public static void whoIsWiner(ArrayList playersResults) {
         int[] scoresTotal = {0, 0, 0};
 
         //Calculate the players total score
@@ -305,11 +371,11 @@ public class ApplicationRunner {
 
         //Find who is winner
         if (scoresTotal[0] > scoresTotal[1] && scoresTotal[0] > scoresTotal[2]) {
-            soutPrint("\nPlayer 1 wins that game.!");
+            soutPrint("\nPlayer 1 wins that game.!\n");
         } else if (scoresTotal[1] > scoresTotal[0] && scoresTotal[1] > scoresTotal[2]) {
-            soutPrint("\nPlayer 2 wins that game.!");
+            soutPrint("\nPlayer 2 wins that game.!\n");
         } else {
-            soutPrint("\nPlayer 3 wins that game.!");
+            soutPrint("\nPlayer 3 wins that game.!\n");
         }
     }
 }
