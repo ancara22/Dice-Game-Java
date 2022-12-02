@@ -186,20 +186,21 @@ public class ApplicationRunner {
      */
     public static boolean isBoostead(int[] usedDices, int[] dices, String player) {
 
-        int countUsedDices = 0;
-        for (int element : usedDices) {
-            if (Arrays.stream(dices).anyMatch(x -> x == element)) {
-                countUsedDices += 1;
+        boolean isUserBusted = true;
+        
+        for (int element : dices) {
+            if (!(Arrays.stream(usedDices).anyMatch(x -> x == element))) {
+                isUserBusted = false;
             }
-        }
-
-        if (countUsedDices == dices.length) {      //If player boosted, finish the player round
+        }   
+        
+        if (isUserBusted) {      //If player boosted, finish the player round
             soutPrint("\nSorry, you have busted with that throw."
                     + "\nThis ends your turn with no score.");
             soutPrint("\nFinal score for that turn for Player " + player + " = 0");
             return true;
         }
-        return false;
+        return isUserBusted;
     }
 
     /*
